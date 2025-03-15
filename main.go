@@ -15,6 +15,14 @@ func encryptFile(key []byte, filepath string, coef int64) error {
 		return err
 	}
 
+	end := len(plaintext) % aes.BlockSize
+	if end != 0 {
+		countSteps := aes.BlockSize-end
+		for range countSteps {
+			plaintext = append(plaintext, ' ')
+		}
+	}
+
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return err
