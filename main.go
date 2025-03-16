@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func encryptFile(key []byte, filepath string, coef int64) error {
+func encryptFile(key []byte, filepath string) error {
 	plaintext, err := os.ReadFile(filepath)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func encryptFile(key []byte, filepath string, coef int64) error {
 	}
 
 	cfb := cipher.NewCBCEncrypter(block, iv)
-	ciphertext := make([]byte, aes.BlockSize*coef)
+	ciphertext := make([]byte, len(plaintext))
 	cfb.CryptBlocks(ciphertext, plaintext)
 	ciphertext = append(iv, ciphertext...)
 
@@ -44,7 +44,7 @@ func encryptFile(key []byte, filepath string, coef int64) error {
 	return os.WriteFile(filepath+".enc", []byte(encodedCiphertext), 0644)
 }
 
-func decryptFile(key []byte, filepath string, coef int64) error {
+func decryptFile(key []byte, filepath string) error {
 	os.ReadFile(filepath)
 	ciphertext, err := os.ReadFile(filepath)
 	if err != nil {
@@ -65,7 +65,7 @@ func decryptFile(key []byte, filepath string, coef int64) error {
 	ciphertext = decodedCiphertext[aes.BlockSize:]
 
 	cfb := cipher.NewCBCDecrypter(block, iv)
-	plaintext := make([]byte, aes.BlockSize*coef)
+	plaintext := make([]byte, len(decodedCiphertext))
 	cfb.CryptBlocks(plaintext, ciphertext)
 
 	return os.WriteFile(filepath+".enc", plaintext, 0644)
@@ -82,25 +82,15 @@ func main() {
 	// Choose between encryption or decryption
 	action := "encrypt" // or "decrypt"
 
-	file, err := os.Stat(filepath)
-	if err != nil {
-		fmt.Println("File not found:", err)
-	}
-	coef := file.Size()
-	if file.Size() > aes.BlockSize {
-		coef = (file.Size() % aes.BlockSize)
-	}
-	coef += 100
-
 	if action == "encrypt" {
-		err := encryptFile(key, filepath, coef)
+		err := encryptFile(key, filepath)
 		if err != nil {
 			fmt.Println("Error encrypting file:", err)
 			return
 		}
 		fmt.Println("File encrypted successfully!")
 	} else if action == "decrypt" {
-		err := decryptFile(key, filepath+".enc", coef)
+		err := decryptFile(key, filepath+".enc")
 		if err != nil {
 			fmt.Println("Error decrypting file:", err)
 			return
