@@ -18,7 +18,7 @@ func EncryptFile(key []byte, filepath string) error {
 	if end != 0 {
 		countSteps := aes.BlockSize - end
 		for range countSteps {
-			plaintext = append(plaintext, ' ')
+			plaintext = append(plaintext, 0)
 		}
 	}
 
@@ -65,6 +65,19 @@ func DecryptFile(key []byte, filepath string) error {
 	cfb := cipher.NewCBCDecrypter(block, iv)
 	plaintext := make([]byte, len(decodedCiphertext))
 	cfb.CryptBlocks(plaintext, ciphertext)
+	plaintext = deletionFillChars(plaintext)
 
 	return os.WriteFile(filepath+".enc", plaintext, 0644)
+}
+
+func deletionFillChars(src []byte) []byte {
+	length := len(src)
+	var unPadding int
+	for _, val := range src {
+		if rune(val) == rune(0) {
+			unPadding++
+		}
+	}
+
+	return src[:(length - unPadding)]
 }
