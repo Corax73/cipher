@@ -1,33 +1,43 @@
 package main
 
 import (
-	"cipher/core"
-	"fmt"
+	"cipher/gui"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
 func main() {
-	password := "+W^apDG_nxq0PKJa"
-	key := []byte(password)
+	app := app.New()
+	window := app.NewWindow("Text file encryptor/decryptor")
 
-	filepath := "./data/your_file.txt"
+	btnExit := widget.NewButton("Exit", func() {
+		app.Quit()
+	})
 
-	action := "encrypt" // or "decrypt"
-
-	if action == "encrypt" {
-		err := core.EncryptFile(key, filepath)
-		if err != nil {
-			fmt.Println("Error encrypting file:", err)
-			return
-		}
-		fmt.Println("File encrypted successfully!")
-	} else if action == "decrypt" {
-		err := core.DecryptFile(key, filepath+".enc")
-		if err != nil {
-			fmt.Println("Error decrypting file:", err)
-			return
-		}
-		fmt.Println("File decrypted successfully!")
-	} else {
-		fmt.Println("Invalid action. Please choose 'encrypt' or 'decrypt'.")
+	gui := gui.GuiApp{
+		InputPassword:  widget.NewEntry(),
+		InputOutputExt: widget.NewEntry(),
+		Window:         &window,
 	}
+	gui.SelectMethod = gui.GetSelectMethod()
+	gui.InputPassword.SetPlaceHolder("Enter password")
+	gui.InputOutputExt.SetPlaceHolder("Enter the output file extension")
+
+	content := container.NewGridWithRows(
+		3,
+		container.NewGridWithColumns(
+			2,
+			gui.InputPassword,
+			gui.InputOutputExt,
+		),
+		gui.SelectMethod,
+		btnExit,
+	)
+	window.SetContent(content)
+	window.CenterOnScreen()
+	window.Resize(fyne.NewSize(500, 400))
+	window.ShowAndRun()
 }
