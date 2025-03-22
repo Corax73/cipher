@@ -8,12 +8,11 @@ import (
 	"os"
 )
 
-func EncryptFile(key []byte, filepath string) error {
+func EncryptFile(key []byte, filepath string) (string, error) {
 	plaintext, err := os.ReadFile(filepath)
 	if err != nil {
-		return err
+		return "", err
 	}
-
 	end := len(plaintext) % aes.BlockSize
 	if end != 0 {
 		countSteps := aes.BlockSize - end
@@ -21,53 +20,43 @@ func EncryptFile(key []byte, filepath string) error {
 			plaintext = append(plaintext, 0)
 		}
 	}
-
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return err
+		return "", err
 	}
-
 	iv := make([]byte, aes.BlockSize)
 	if _, err := rand.Read(iv); err != nil {
-		return err
+		return "", err
 	}
-
 	cfb := cipher.NewCBCEncrypter(block, iv)
 	ciphertext := make([]byte, len(plaintext))
 	cfb.CryptBlocks(ciphertext, plaintext)
 	ciphertext = append(iv, ciphertext...)
-
-	encodedCiphertext := base64.StdEncoding.EncodeToString(ciphertext)
-
-	return os.WriteFile(filepath+".enc", []byte(encodedCiphertext), 0644)
+	return base64.StdEncoding.EncodeToString(ciphertext), err
 }
 
-func DecryptFile(key []byte, filepath string) error {
+func DecryptFile(key []byte, filepath string) ([]byte, error) {
+	emptyResp := make([]byte, 0)
 	os.ReadFile(filepath)
 	ciphertext, err := os.ReadFile(filepath)
 	if err != nil {
-		return err
+		return emptyResp, err
 	}
-
 	decodedCiphertext, err := base64.StdEncoding.DecodeString(string(ciphertext))
 	if err != nil {
-		return err
+		return emptyResp, err
 	}
-
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return err
+		return emptyResp, err
 	}
-
 	iv := decodedCiphertext[:aes.BlockSize]
 	ciphertext = decodedCiphertext[aes.BlockSize:]
-
 	cfb := cipher.NewCBCDecrypter(block, iv)
 	plaintext := make([]byte, len(decodedCiphertext))
 	cfb.CryptBlocks(plaintext, ciphertext)
 	plaintext = deletionFillChars(plaintext)
-
-	return os.WriteFile(filepath+".enc", plaintext, 0644)
+	return plaintext, err
 }
 
 func deletionFillChars(src []byte) []byte {
@@ -78,6 +67,5 @@ func deletionFillChars(src []byte) []byte {
 			unPadding++
 		}
 	}
-
 	return src[:(length - unPadding)]
 }

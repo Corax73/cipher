@@ -18,26 +18,24 @@ func main() {
 	})
 
 	gui := gui.GuiApp{
-		InputPassword:  widget.NewEntry(),
-		InputOutputExt: widget.NewEntry(),
-		Window:         &window,
-		SelectedFile:   widget.NewLabel("Selected file"),
+		InputPassword: widget.NewEntry(),
+		Window:        &window,
+		SelectedFile:  widget.NewLabel("Selected file"),
 	}
 	gui.SelectMethod = gui.GetSelectMethod()
 	gui.InputPassword.SetPlaceHolder("Enter password, minimum length 16")
-	gui.InputOutputExt.SetPlaceHolder("Enter the output file extension")
 	gui.GeneratePasswordBtn = gui.GeneratePasswordBtnBtnHandler()
 	gui.ClearResultBtn = gui.ClearWindowBtnHandler()
 	gui.SelectFileBtn = gui.SelectFileBtnHandler()
+	gui.ProcessBtn = gui.ProcessBtnHandler()
 
 	content := container.NewGridWithRows(
 		3,
 		container.NewGridWithColumns(
 			2,
 			container.NewGridWithRows(
-				2,
+				1,
 				gui.InputPassword,
-				gui.InputOutputExt,
 			),
 			gui.GeneratePasswordBtn,
 		),
@@ -51,7 +49,11 @@ func main() {
 			),
 			gui.ClearResultBtn,
 		),
-		btnExit,
+		container.NewGridWithRows(
+			2,
+			gui.ProcessBtn,
+			btnExit,
+		),
 	)
 	window.SetContent(content)
 	window.CenterOnScreen()
