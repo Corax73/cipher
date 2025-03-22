@@ -12,18 +12,44 @@ import (
 func main() {
 	app := app.New()
 	window := app.NewWindow("Text file encryptor/decryptor")
-
-	btnExit := widget.NewButton("Exit", func() {
-		app.Quit()
-	})
-
 	gui := gui.GuiApp{
 		InputPassword: widget.NewEntry(),
 		Window:        &window,
-		SelectedFile:  widget.NewLabel("Selected file"),
 	}
+	gui.Lang = "en"
+	gui.DataByLang = map[string]map[string]string{
+		"ru": map[string]string{
+			"passwordPlaceholder":       "Введите пароль, минимальная длина 16",
+			"btnExit":                   "Выход",
+			"generatePasswordBtn":       "Сгенерировать пароль",
+			"clearBtn":                  "Очистить все данные окна",
+			"selectFileBtn":             "Выберите файл",
+			"selectedFilePlaceholder":   "Еще не выбран файл",
+			"processFileBtn":            "Обработать файл",
+			"selectedMethodPlaceholder": "Выберите метод",
+			"encryptMethod":             "Зашифровать",
+			"decryptMethod":             "Расшифровать",
+		},
+		"en": map[string]string{
+			"passwordPlaceholder":       "Enter password, minimum length 16",
+			"btnExit":                   "Exit",
+			"generatePasswordBtn":       "Generate password",
+			"clearBtn":                  "Clearing window data",
+			"selectFileBtn":             "Select file",
+			"selectedFilePlaceholder":   "No file yet",
+			"processFileBtn":            "Process the file",
+			"selectedMethodPlaceholder": "Select method",
+			"encryptMethod":             "Encrypt",
+			"decryptMethod":             "Decrypt",
+		},
+	}
+	gui.BtnExit = widget.NewButton(gui.DataByLang[gui.Lang]["btnExit"], func() {
+		app.Quit()
+	})
+	gui.SelectedFile = widget.NewLabel(gui.DataByLang[gui.Lang]["selectedFilePlaceholder"])
+	gui.LangToggler = gui.LangTogglerHandler()
 	gui.SelectMethod = gui.GetSelectMethod()
-	gui.InputPassword.SetPlaceHolder("Enter password, minimum length 16")
+	gui.InputPassword.SetPlaceHolder(gui.DataByLang[gui.Lang]["passwordPlaceholder"])
 	gui.GeneratePasswordBtn = gui.GeneratePasswordBtnBtnHandler()
 	gui.ClearResultBtn = gui.ClearWindowBtnHandler()
 	gui.SelectFileBtn = gui.SelectFileBtnHandler()
@@ -33,11 +59,12 @@ func main() {
 		3,
 		container.NewGridWithColumns(
 			2,
+			gui.LangToggler,
 			container.NewGridWithRows(
-				1,
+				2,
 				gui.InputPassword,
+				gui.GeneratePasswordBtn,
 			),
-			gui.GeneratePasswordBtn,
 		),
 		container.NewGridWithColumns(
 			3,
@@ -52,7 +79,7 @@ func main() {
 		container.NewGridWithRows(
 			2,
 			gui.ProcessBtn,
-			btnExit,
+			gui.BtnExit,
 		),
 	)
 	window.SetContent(content)
