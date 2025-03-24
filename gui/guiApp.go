@@ -15,7 +15,7 @@ type State struct {
 }
 
 func (state *State) ResetState() {
-	state.Password, state.Method, state.LoadedFilePath, state.Lang = "", "", "", "en"
+	state.Password, state.Method, state.LoadedFilePath, state.Lang, state.SelectedMethodNumber = "", "", "", "en", 0
 }
 
 type Internationalization struct {
@@ -67,7 +67,7 @@ func (gui *GuiApp) ClearWindowBtnHandler() *widget.Button {
 		gui.DataByLang[gui.Lang]["clearBtn"],
 		func() {
 			gui.InputPassword.SetText("")
-			gui.SelectMethod.Selected = gui.DataByLang[gui.Lang]["selectedMethodPlaceholder"]
+			gui.SelectMethod.ClearSelected()
 			gui.SelectMethod.Refresh()
 			gui.FileURI = nil
 			gui.SelectedFile.SetText(gui.DataByLang[gui.Lang]["selectedFilePlaceholder"])
@@ -161,6 +161,7 @@ func (gui *GuiApp) LangTogglerHandler() *widget.RadioGroup {
 		},
 	)
 	resp.Selected = gui.Lang
+	resp.Required = true
 	return resp
 }
 
@@ -189,6 +190,8 @@ func (gui *GuiApp) refreshAllCanvas() {
 		gui.SelectMethod.SetSelected(gui.DataByLang[gui.Lang]["encryptMethod"])
 	} else if gui.SelectedMethodNumber == 2 {
 		gui.SelectMethod.SetSelected(gui.DataByLang[gui.Lang]["decryptMethod"])
+	} else {
+		gui.SelectMethod.ClearSelected()
 	}
 	gui.SelectMethod.Refresh()
 	gui.ProcessBtn.Text = gui.DataByLang[gui.Lang]["processFileBtn"]
