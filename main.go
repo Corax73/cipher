@@ -19,7 +19,7 @@ func main() {
 	gui.Lang = "en"
 	gui.DataByLang = map[string]map[string]string{
 		"ru": map[string]string{
-			"passwordPlaceholder":       "Введите пароль, минимальная длина 16",
+			"passwordPlaceholder":       "Введите пароль, длина должна быть равна 16",
 			"btnExit":                   "Выход",
 			"generatePasswordBtn":       "Сгенерировать пароль",
 			"clearBtn":                  "Очистить все данные окна",
@@ -29,9 +29,12 @@ func main() {
 			"selectedMethodPlaceholder": "Выберите метод",
 			"encryptMethod":             "Зашифровать",
 			"decryptMethod":             "Расшифровать",
+			"errPasswordLength":         "Длина пароля должна быть равна 16",
+			"missingFile":               "Загрузите файл",
+			"missingMethod":             "Выберите метод",
 		},
 		"en": map[string]string{
-			"passwordPlaceholder":       "Enter password, minimum length 16",
+			"passwordPlaceholder":       "Enter password, length must be 16 characters",
 			"btnExit":                   "Exit",
 			"generatePasswordBtn":       "Generate password",
 			"clearBtn":                  "Clearing window data",
@@ -41,6 +44,9 @@ func main() {
 			"selectedMethodPlaceholder": "Select method",
 			"encryptMethod":             "Encrypt",
 			"decryptMethod":             "Decrypt",
+			"errPasswordLength":         "Password length must be 16 characters",
+			"missingFile":               "Upload file",
+			"missingMethod":             "Select method",
 		},
 	}
 	gui.BtnExit = widget.NewButton(gui.DataByLang[gui.Lang]["btnExit"], func() {

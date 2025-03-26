@@ -2,6 +2,7 @@ package gui
 
 import (
 	"cipher/core"
+	"errors"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
@@ -44,7 +45,7 @@ func (gui *GuiApp) GetSelectMethod() *widget.Select {
 			gui.Method = value
 			if value == gui.DataByLang[gui.Lang]["encryptMethod"] {
 				gui.SelectedMethodNumber = 1
-			} else {
+			} else if value == gui.DataByLang[gui.Lang]["decryptMethod"] {
 				gui.SelectedMethodNumber = 2
 			}
 		},
@@ -110,43 +111,50 @@ func (gui *GuiApp) ProcessBtnHandler() *widget.Button {
 		func() {
 			gui.Password = gui.InputPassword.Text
 			gui.LoadedFilePath = gui.SelectedFile.Text
-			if gui.Password != "" &&
-				len(gui.Password) == 16 &&
-				gui.FileURI != nil &&
-				gui.LoadedFilePath != "" &&
-				gui.Method != "" {
-				key := []byte(gui.Password)
-				var data []byte
-				var err error
-				encryptVal := gui.DataByLang[gui.Lang]["encryptMethod"]
-				decryptVal := gui.DataByLang[gui.Lang]["decryptMethod"]
-				if gui.Method == encryptVal {
-					dataStr, err := core.EncryptFile(key, gui.LoadedFilePath)
-					data = []byte(dataStr)
-					if err != nil {
-						dialog.ShowError(err, *gui.Window)
-						return
-					}
-				} else if gui.Method == decryptVal {
-					data, err = core.DecryptFile(key, gui.LoadedFilePath)
-					if err != nil {
-						dialog.ShowError(err, *gui.Window)
-						return
-					}
+			if len(gui.Password) != 16 {
+				dialog.ShowError(errors.New(gui.DataByLang[gui.Lang]["errPasswordLength"]), *gui.Window)
+				return
+			}
+			if gui.FileURI == nil ||
+				gui.LoadedFilePath == "" {
+				dialog.ShowError(errors.New(gui.DataByLang[gui.Lang]["missingFile"]), *gui.Window)
+				return
+			}
+			if gui.Method == "" {
+				dialog.ShowError(errors.New(gui.DataByLang[gui.Lang]["missingMethod"]), *gui.Window)
+				return
+			}
+			key := []byte(gui.Password)
+			var data []byte
+			var err error
+			encryptVal := gui.DataByLang[gui.Lang]["encryptMethod"]
+			decryptVal := gui.DataByLang[gui.Lang]["decryptMethod"]
+			if gui.Method == encryptVal {
+				dataStr, err := core.EncryptFile(key, gui.LoadedFilePath)
+				data = []byte(dataStr)
+				if err != nil {
+					dialog.ShowError(err, *gui.Window)
+					return
 				}
-				if len(data) > 0 {
-					dialog.ShowFileSave(
-						func(writer fyne.URIWriteCloser, err error) {
-							if err == nil && writer != nil {
-								_, err := writer.Write(data)
-								if err != nil {
-									dialog.ShowError(err, *gui.Window)
-								}
+			} else if gui.Method == decryptVal {
+				data, err = core.DecryptFile(key, gui.LoadedFilePath)
+				if err != nil {
+					dialog.ShowError(err, *gui.Window)
+					return
+				}
+			}
+			if len(data) > 0 {
+				dialog.ShowFileSave(
+					func(writer fyne.URIWriteCloser, err error) {
+						if err == nil && writer != nil {
+							_, err := writer.Write(data)
+							if err != nil {
+								dialog.ShowError(err, *gui.Window)
 							}
-						},
-						*gui.Window,
-					)
-				}
+						}
+					},
+					*gui.Window,
+				)
 			}
 		},
 	)
